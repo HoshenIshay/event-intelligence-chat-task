@@ -1,0 +1,372 @@
+{
+  "companyProfile": {
+    "name": "Asteron Systems",
+    "companyType": "Fictional multinational industrial-technology company",
+    "business": "Designs and manufactures connected industrial equipment, sensors and control systems, with recurring monitoring and software services.",
+    "primaryMarkets": [
+      "European Union",
+      "North America",
+      "India",
+      "Southeast Asia"
+    ],
+    "primary_markets": "European Union; North America; India; Southeast Asia"
+  },
+  "company_profile": {
+    "name": "Asteron Systems",
+    "companyType": "Fictional multinational industrial-technology company",
+    "business": "Designs and manufactures connected industrial equipment, sensors and control systems, with recurring monitoring and software services.",
+    "primaryMarkets": [
+      "European Union",
+      "North America",
+      "India",
+      "Southeast Asia"
+    ],
+    "primary_markets": "European Union; North America; India; Southeast Asia"
+  },
+  "events": [
+    {
+      "event_id": "evt_001",
+      "event_date": "2026-09-29",
+      "title": "Major cloud provider suffers six-hour regional outage",
+      "summary": "A software configuration failure disrupted banking apps, airline booking systems, healthcare scheduling tools and thousands of enterprise services across several countries before service was restored.",
+      "region": "Global",
+      "domain": "Technology",
+      "source_name": "Global Digital Infrastructure Monitor",
+      "source_url": "https://example.com/events/evt_001"
+    },
+    {
+      "event_id": "evt_002",
+      "event_date": "2026-09-28",
+      "title": "Marine insurers raise premiums on a major shipping route",
+      "summary": "Several large marine insurers increased war-risk premiums after a series of attacks near a heavily used shipping corridor. Some carriers began reviewing alternative routes.",
+      "region": "Middle East / Global Trade",
+      "domain": "Geopolitics",
+      "source_name": "International Marine Insurance Bulletin",
+      "source_url": "https://example.com/events/evt_002"
+    },
+    {
+      "event_id": "evt_003",
+      "event_date": "2026-09-28",
+      "title": "Large employers report slower hiring after deploying AI agents",
+      "summary": "A cross-industry employment survey found that companies using autonomous AI agents reduced hiring most sharply in customer support, finance operations and routine legal review.",
+      "region": "Global",
+      "domain": "Technology / Labor",
+      "source_name": "Global Labor Analytics Consortium",
+      "source_url": "https://example.com/events/evt_003"
+    },
+    {
+      "event_id": "evt_004",
+      "event_date": "2026-09-27",
+      "title": "Three countries introduce temporary industrial power rationing during heatwave",
+      "summary": "Record temperatures pushed electricity demand to new highs while reducing generation efficiency, leading authorities to impose temporary power restrictions on some industrial users.",
+      "region": "Southern Europe",
+      "domain": "Climate / Energy",
+      "source_name": "Regional Grid Operators Update",
+      "source_url": "https://example.com/events/evt_004"
+    },
+    {
+      "event_id": "evt_005",
+      "event_date": "2026-09-27",
+      "title": "Central banks complete live cross-border settlement using tokenized money",
+      "summary": "A group of central banks completed a live multi-currency transaction on a shared digital settlement platform without using traditional correspondent-bank chains.",
+      "region": "Global",
+      "domain": "Finance",
+      "source_name": "Central Bank Innovation Network",
+      "source_url": "https://example.com/events/evt_005"
+    },
+    {
+      "event_id": "evt_006",
+      "event_date": "2026-09-26",
+      "title": "Export licensing introduced for two advanced semiconductor chemicals",
+      "summary": "A major producing country introduced new export licensing requirements for two specialty chemicals used in advanced chip manufacturing, prompting manufacturers to review inventories and alternative suppliers.",
+      "region": "Asia / Global",
+      "domain": "Trade / Technology",
+      "source_name": "International Trade Controls Review",
+      "source_url": "https://example.com/events/evt_006"
+    },
+    {
+      "event_id": "evt_007",
+      "event_date": "2026-09-26",
+      "title": "AI-designed drug candidate reaches human trials in record development time",
+      "summary": "A biotechnology company began early-stage human trials for a drug candidate discovered with AI-assisted molecular design less than two years after target selection.",
+      "region": "Global",
+      "domain": "Healthcare / Technology",
+      "source_name": "Biopharma Innovation Monitor",
+      "source_url": "https://example.com/events/evt_007"
+    },
+    {
+      "event_id": "evt_008",
+      "event_date": "2026-09-25",
+      "title": "Home insurers stop writing new policies in additional high-risk areas",
+      "summary": "Regulatory filings show several insurers have stopped accepting new homeowners policies in more flood- and wildfire-exposed districts, extending restrictions beyond the highest-risk zones.",
+      "region": "North America",
+      "domain": "Climate / Insurance",
+      "source_name": "Insurance Regulatory Filings Monitor",
+      "source_url": "https://example.com/events/evt_008"
+    },
+    {
+      "event_id": "evt_009",
+      "event_date": "2026-09-25",
+      "title": "Autonomous trucks begin regular commercial service on two highway corridors",
+      "summary": "Freight operators launched scheduled autonomous trucking services on predefined routes with remote supervision and no driver in the cab for most of the journey.",
+      "region": "North America",
+      "domain": "Transportation / Technology",
+      "source_name": "Autonomous Freight Deployment Tracker",
+      "source_url": "https://example.com/events/evt_009"
+    },
+    {
+      "event_id": "evt_010",
+      "event_date": "2026-09-25",
+      "title": "Government-backed funds sign long-term critical-mineral supply agreements",
+      "summary": "Several governments and state-backed investment funds signed multi-year agreements for lithium, copper and rare-earth supplies rather than relying primarily on spot-market purchases.",
+      "region": "Global",
+      "domain": "Resources / Geopolitics",
+      "source_name": "Critical Minerals Policy Tracker",
+      "source_url": "https://example.com/events/evt_010"
+    },
+    {
+      "event_id": "evt_011",
+      "event_date": "2026-09-24",
+      "title": "Sodium-ion batteries enter large-scale stationary storage market",
+      "summary": "Multiple manufacturers began commercial shipments of sodium-ion battery systems for grid and industrial storage, with prices falling and less dependence on lithium and nickel inputs.",
+      "region": "Global",
+      "domain": "Energy / Technology",
+      "source_name": "Energy Storage Industry Tracker",
+      "source_url": "https://example.com/events/evt_011"
+    },
+    {
+      "event_id": "evt_012",
+      "event_date": "2026-09-24",
+      "title": "School enrollment falls faster than forecasts in several advanced economies",
+      "summary": "New enrollment data show primary-school populations shrinking more quickly than expected, leading municipalities to consider school closures and revisions to long-term infrastructure plans.",
+      "region": "East Asia / Europe",
+      "domain": "Demographics",
+      "source_name": "Demographic Trends Observatory",
+      "source_url": "https://example.com/events/evt_012"
+    },
+    {
+      "event_id": "evt_013",
+      "event_date": "2026-09-24",
+      "title": "Long-duration energy storage moves from pilots to commercial procurement",
+      "summary": "Utilities in several markets signed large contracts for systems capable of storing electricity for eight to twenty-four hours, moving the technology beyond demonstration projects.",
+      "region": "Global",
+      "domain": "Energy",
+      "source_name": "Utility Procurement Database",
+      "source_url": "https://example.com/events/evt_013"
+    },
+    {
+      "event_id": "evt_014",
+      "event_date": "2026-09-23",
+      "title": "Large companies allow AI agents to negotiate low-value purchases",
+      "summary": "Several multinational companies moved AI procurement agents from recommendation-only tools to limited autonomous negotiation and purchasing for standardized goods and services.",
+      "region": "Global",
+      "domain": "Enterprise Technology",
+      "source_name": "Enterprise Automation Survey",
+      "source_url": "https://example.com/events/evt_014"
+    },
+    {
+      "event_id": "evt_015",
+      "event_date": "2026-09-23",
+      "title": "Drug-resistant hospital infections rise again",
+      "summary": "Hospital surveillance networks reported another year of increasing infections resistant to multiple first-line antibiotics while the pipeline of new antimicrobial drugs remained limited.",
+      "region": "Global",
+      "domain": "Public Health",
+      "source_name": "Antimicrobial Resistance Surveillance Network",
+      "source_url": "https://example.com/events/evt_015"
+    },
+    {
+      "event_id": "evt_016",
+      "event_date": "2026-09-23",
+      "title": "First standardized small modular reactor fleet enters serial construction",
+      "summary": "A utility consortium placed orders for multiple identical small modular reactors using a common design and supply chain, shifting the technology toward repeat deployment.",
+      "region": "Europe",
+      "domain": "Energy / Technology",
+      "source_name": "Advanced Nuclear Deployment Monitor",
+      "source_url": "https://example.com/events/evt_016"
+    },
+    {
+      "event_id": "evt_017",
+      "event_date": "2026-09-22",
+      "title": "Groundwater levels fall further in several major agricultural basins",
+      "summary": "Satellite and well data show continued groundwater losses in major food-producing regions while recharge rates remain below extraction levels.",
+      "region": "Global",
+      "domain": "Climate / Food",
+      "source_name": "Global Aquifer Monitoring Program",
+      "source_url": "https://example.com/events/evt_017"
+    },
+    {
+      "event_id": "evt_018",
+      "event_date": "2026-09-22",
+      "title": "Green ammonia contracts approach conventional-cost levels at several export hubs",
+      "summary": "Long-term supply agreements at renewable-energy hubs price green ammonia close to conventional ammonia after accounting for carbon costs and production incentives.",
+      "region": "Global",
+      "domain": "Energy / Industry",
+      "source_name": "Clean Molecules Market Review",
+      "source_url": "https://example.com/events/evt_018"
+    },
+    {
+      "event_id": "evt_019",
+      "event_date": "2026-09-22",
+      "title": "Care-worker shortages widen as aging populations increase demand",
+      "summary": "Several aging economies report record vacancies in elder care, home health and nursing while the population over age 80 continues to grow.",
+      "region": "Europe / East Asia",
+      "domain": "Demographics / Labor",
+      "source_name": "Global Care Workforce Monitor",
+      "source_url": "https://example.com/events/evt_019"
+    },
+    {
+      "event_id": "evt_020",
+      "event_date": "2026-09-21",
+      "title": "Climate insurance retreat begins affecting mortgage availability",
+      "summary": "Banks in several climate-exposed regions tightened mortgage requirements for properties that cannot secure long-term insurance coverage, contributing to price differences between insured and difficult-to-insure areas.",
+      "region": "North America / Europe",
+      "domain": "Climate / Finance",
+      "source_name": "Climate Finance Risk Monitor",
+      "source_url": "https://example.com/events/evt_020"
+    },
+    {
+      "event_id": "evt_021",
+      "event_date": "2026-09-21",
+      "title": "Grid connection queues grow faster than new generation capacity",
+      "summary": "Renewable projects, batteries and large data centers face multi-year connection delays in several major electricity markets as grid infrastructure struggles to keep pace with demand.",
+      "region": "Global",
+      "domain": "Energy / Infrastructure",
+      "source_name": "International Grid Infrastructure Review",
+      "source_url": "https://example.com/events/evt_021"
+    },
+    {
+      "event_id": "evt_022",
+      "event_date": "2026-09-20",
+      "title": "General-purpose warehouse robots begin handling multiple tasks without fixed scripts",
+      "summary": "Logistics operators started deploying robots that can switch between picking, pallet movement, inspection and simple exception handling using vision-language models.",
+      "region": "Global",
+      "domain": "Robotics / Logistics",
+      "source_name": "Industrial Robotics Adoption Survey",
+      "source_url": "https://example.com/events/evt_022"
+    },
+    {
+      "event_id": "evt_023",
+      "event_date": "2026-09-20",
+      "title": "Public debt service exceeds health and education spending in more countries",
+      "summary": "Fiscal data show a growing number of lower- and middle-income countries spending more on public debt service than on health and education combined.",
+      "region": "Emerging Markets",
+      "domain": "Economics / Public Finance",
+      "source_name": "Sovereign Debt Observatory",
+      "source_url": "https://example.com/events/evt_023"
+    },
+    {
+      "event_id": "evt_024",
+      "event_date": "2026-09-19",
+      "title": "Gene-edited drought-tolerant crops enter large-scale commercial planting",
+      "summary": "Farmers in several markets began large-scale planting of gene-edited crop varieties designed to maintain yields with less water, moving the technology beyond field trials.",
+      "region": "Global",
+      "domain": "Agriculture / Biotechnology",
+      "source_name": "Agricultural Biotechnology Adoption Monitor",
+      "source_url": "https://example.com/events/evt_024"
+    },
+    {
+      "event_id": "evt_025",
+      "event_date": "2026-09-19",
+      "title": "Public pension funding gaps widen as worker-to-retiree ratios fall",
+      "summary": "Updated actuarial projections show worsening pension funding gaps in several countries as retirement populations grow faster than payroll contributions.",
+      "region": "Global",
+      "domain": "Economics / Demographics",
+      "source_name": "International Pension Sustainability Review",
+      "source_url": "https://example.com/events/evt_025"
+    },
+    {
+      "event_id": "evt_026",
+      "event_date": "2026-09-18",
+      "title": "Cities make extreme-heat work restrictions permanent",
+      "summary": "Several cities converted temporary heatwave measures into permanent seasonal rules restricting outdoor work, freight access and some vehicle activity during high-risk heat periods.",
+      "region": "Global Cities",
+      "domain": "Climate / Regulation",
+      "source_name": "Urban Climate Regulation Tracker",
+      "source_url": "https://example.com/events/evt_026"
+    },
+    {
+      "event_id": "evt_027",
+      "event_date": "2026-09-18",
+      "title": "Critical digital services become more concentrated in a few cloud ecosystems",
+      "summary": "Infrastructure mapping shows a growing share of government, banking, communications and healthcare workloads depending on a small number of hyperscale cloud providers and shared software dependencies.",
+      "region": "Global",
+      "domain": "Technology / Systemic Risk",
+      "source_name": "Digital Concentration Risk Review",
+      "source_url": "https://example.com/events/evt_027"
+    },
+    {
+      "event_id": "evt_028",
+      "event_date": "2026-09-17",
+      "title": "New respiratory virus cluster includes probable household transmission",
+      "summary": "Health authorities confirmed a small cluster linked to animal exposure, including several cases that may have spread between household members. No sustained community transmission has been confirmed.",
+      "region": "Southeast Asia",
+      "domain": "Public Health",
+      "source_name": "Regional Public Health Surveillance Network",
+      "source_url": "https://example.com/events/evt_028"
+    },
+    {
+      "event_id": "evt_029",
+      "event_date": "2026-09-17",
+      "title": "Large emerging economy introduces temporary capital controls",
+      "summary": "Authorities limited foreign-currency transfers and large cross-border withdrawals after a sharp acceleration in deposit outflows from domestic banks.",
+      "region": "Emerging Markets",
+      "domain": "Finance / Regulation",
+      "source_name": "International Financial Stability Desk",
+      "source_url": "https://example.com/events/evt_029"
+    },
+    {
+      "event_id": "evt_030",
+      "event_date": "2026-09-16",
+      "title": "Carbon-border reporting enters stricter verification phase",
+      "summary": "Importers covered by a major carbon-border regime will face more detailed emissions-data validation and documentation requirements in the next reporting phase.",
+      "region": "Europe / Global Trade",
+      "domain": "Climate / Trade Regulation",
+      "source_name": "European Trade Regulation Monitor",
+      "source_url": "https://example.com/events/evt_030"
+    }
+  ],
+  "event_ids": [
+    "evt_001",
+    "evt_002",
+    "evt_003",
+    "evt_004",
+    "evt_005",
+    "evt_006",
+    "evt_007",
+    "evt_008",
+    "evt_009",
+    "evt_010",
+    "evt_011",
+    "evt_012",
+    "evt_013",
+    "evt_014",
+    "evt_015",
+    "evt_016",
+    "evt_017",
+    "evt_018",
+    "evt_019",
+    "evt_020",
+    "evt_021",
+    "evt_022",
+    "evt_023",
+    "evt_024",
+    "evt_025",
+    "evt_026",
+    "evt_027",
+    "evt_028",
+    "evt_029",
+    "evt_030"
+  ],
+  "companyContext": {
+    "name": "Asteron Systems",
+    "companyType": "Fictional multinational industrial-technology company",
+    "business": "Designs and manufactures connected industrial equipment, sensors and control systems, with recurring monitoring and software services.",
+    "primaryMarkets": [
+      "European Union",
+      "North America",
+      "India",
+      "Southeast Asia"
+    ],
+    "primary_markets": "European Union; North America; India; Southeast Asia"
+  }
+}

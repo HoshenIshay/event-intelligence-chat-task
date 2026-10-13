@@ -10,7 +10,7 @@ Work through these ten independently verifiable tasks in order. Mark each checkb
 
 ## 2. Prepare and validate the supplied data
 
-- [ ] Convert the supplied workbooks into one `server/data/context.json` fixture, preserving event IDs, dates, titles, summaries, regions, domains, source names, and source URLs, along with the company profile.
+- [x] Convert the supplied workbooks into one `server/data/context.json` fixture, preserving event IDs, dates, titles, summaries, regions, domains, source names, and source URLs, along with the company profile.
 - Treat workbook rows as the source of event facts; do not fetch the placeholder URLs.
 - **Verify:** a repeatable check confirms 30 events, unique IDs, required fields, and the expected company profile.
 
