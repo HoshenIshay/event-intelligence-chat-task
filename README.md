@@ -22,18 +22,21 @@ npm install
 
 ## 2. Configure the Gemini API key securely
 
-The key must live in the server runtime environment, not in the client bundle and not in source control.
-
-This project does not automatically load a `.env` file with a Node helper. The server reads the value from `process.env.GEMINI_API_KEY` at startup, so in local development the safest pattern is to set it in the same PowerShell session that launches the server:
+The key must live in the server environment, not in the client bundle and not in source control. The server loads `server/.env` explicitly at startup.
 
 ```powershell
 cd server
-$env:GEMINI_API_KEY="paste-your-real-gemini-key-here"
-$env:PORT="3001"
+Copy-Item .env.example .env
+notepad .env
+```
+
+Put your actual key in the `GEMINI_API_KEY` value in the editor, and leave `PORT=3001`. Save the file, close the editor, then start the server:
+
+```powershell
 npm run dev
 ```
 
-Keep the actual key out of the repo. The file `server/.env.example` is only a template and should never contain a real secret. If you prefer a local file, keep it outside the project root or exclude it from Git using `.gitignore`.
+Keep the actual key out of the repo. The actual `server/.env` file is ignored by Git; `server/.env.example` is only a template and must never contain a real secret. Restart the server after changing the key.
 
 ## 3. Start both applications
 

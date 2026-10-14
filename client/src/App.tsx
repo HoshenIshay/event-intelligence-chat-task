@@ -37,9 +37,29 @@ async function defaultSendMessage(content: string): Promise<ChatResponse> {
     }),
   });
 
-  const payload = (await response.json()) as ChatResponse;
+  const responseBody = await response.text();
+  let payload: ChatResponse = {};
+
+  if (responseBody.trim()) {
+    try {
+      payload = JSON.parse(responseBody) as ChatResponse;
+    } catch {
+      if (!response.ok) {
+        throw new Error(
+          `Request failed with HTTP ${response.status}; the server returned a non-JSON response.`,
+        );
+      }
+
+      throw new Error(`The server returned invalid JSON (HTTP ${response.status}).`);
+    }
+  }
+
+  if (!responseBody.trim()) {
+    throw new Error(`The server returned an empty response (HTTP ${response.status}).`);
+  }
+
   if (!response.ok) {
-    throw new Error(payload.error ?? "Request failed.");
+    throw new Error(payload.error ?? `Request failed with HTTP ${response.status}.`);
   }
 
   return payload;

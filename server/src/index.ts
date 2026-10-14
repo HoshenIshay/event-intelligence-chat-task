@@ -1,12 +1,27 @@
+import dotenv from "dotenv";
 import express, { type Request, type Response } from "express";
 import { GoogleGenAI } from "@google/genai";
 import { readFileSync } from "node:fs";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+dotenv.config({ path: fileURLToPath(new URL("../.env", import.meta.url)) });
 
 const contextPath = new URL("../data/context.json", import.meta.url);
 const contextData = JSON.parse(readFileSync(contextPath, "utf8")) as {
-  companyProfile?: { name?: string; companyType?: string; business?: string; primaryMarkets?: string[] };
-  company_profile?: { name?: string; companyType?: string; business?: string; primaryMarkets?: string[] };
+  companyProfile?: {
+    name?: string;
+    companyType?: string;
+    business?: string;
+    primaryMarkets?: string[];
+    primary_markets?: string[];
+  };
+  company_profile?: {
+    name?: string;
+    companyType?: string;
+    business?: string;
+    primaryMarkets?: string[];
+    primary_markets?: string[];
+  };
   events?: Array<{
     event_id: string;
     event_date: string;
@@ -261,7 +276,7 @@ export async function generateGeminiResponse(
     const prompt = buildGroundingPrompt(messages);
 
     const result = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.8-flash",
       contents: prompt,
     });
 

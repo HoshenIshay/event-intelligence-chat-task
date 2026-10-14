@@ -118,11 +118,11 @@ test("generateGeminiResponse includes the full conversation and the event datase
   let capturedContents = "";
 
   try {
-    const messages = [
+    const messages: ChatMessage[] = [
       { role: "user", content: "Which events matter most for industrial costs?" },
       { role: "assistant", content: "Semiconductor supply and power rationing are the biggest near-term risks." },
       { role: "user", content: "Which of those could affect our cost base first?" },
-    ] as const;
+    ];
 
     const payload = await generateGeminiResponse(messages, () => ({
       models: {
