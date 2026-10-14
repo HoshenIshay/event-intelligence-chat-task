@@ -7,10 +7,19 @@ import App from "./App";
 
 describe("Event Intelligence Chat UI", () => {
   it("renders a successful answer with citations and clears the loading state", async () => {
-    let resolveResponse: (value: any) => void;
+    let resolveResponse: (value: {
+      answer: string;
+      evidenceStatus: "not_evaluated" | "supported" | "insufficient";
+      references: Array<{ eventId: string; sourceName: string }>;
+    }) => void;
+
     const sendMessage = vi.fn(
       () =>
-        new Promise((resolve) => {
+        new Promise<{
+          answer: string;
+          evidenceStatus: "not_evaluated" | "supported" | "insufficient";
+          references: Array<{ eventId: string; sourceName: string }>;
+        }>((resolve) => {
           resolveResponse = resolve;
         })
     );

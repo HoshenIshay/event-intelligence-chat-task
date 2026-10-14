@@ -57,6 +57,6 @@ Work through these ten independently verifiable tasks in order. Mark each checkb
 
 ## 10. Document and verify the finished local workflow
 
-- [ ] Write the root README with setup and run instructions, Gemini configuration, architecture, context-selection rationale, grounding and uncertainty behavior, test/evaluation commands, one-day trade-offs, and how the approach would change for 100,000+ events or a continuous stream.
+- [x] Write the root README with setup and run instructions, Gemini configuration, architecture, context-selection rationale, grounding and uncertainty behavior, test/evaluation commands, one-day trade-offs, and how the approach would change for 100,000+ events or a continuous stream.
 - Keep deployment, ingestion, authentication, and vector search out of scope.
 - **Verify:** follow the README from a clean local setup and run the documented test commands.

@@ -72,14 +72,13 @@ function App({ sendMessage = defaultSendMessage }: AppProps) {
       const response = await sendMessage(trimmed);
 
       if (response.error) {
-        setMessages((current) => [
-          ...current,
-          {
-            id: `error-${Date.now()}`,
-            role: "assistant",
-            content: response.error,
-          },
-        ]);
+        const errorMessage: ChatMessage = {
+          id: `error-${Date.now()}`,
+          role: "assistant",
+          content: response.error,
+        };
+
+        setMessages((current) => [...current, errorMessage]);
         return;
       }
 
@@ -90,25 +89,22 @@ function App({ sendMessage = defaultSendMessage }: AppProps) {
       };
 
       const references = response.references ?? [];
-      setMessages((current) => [
-        ...current,
-        assistantMessage,
-        ...references.map((reference) => ({
-          id: `ref-${reference.eventId}-${Date.now()}`,
-          role: "assistant" as const,
-          content: `${reference.eventId} — ${reference.sourceName}`,
-        })),
-      ]);
+      const referenceMessages: ChatMessage[] = references.map((reference) => ({
+        id: `ref-${reference.eventId}-${Date.now()}`,
+        role: "assistant",
+        content: `${reference.eventId} — ${reference.sourceName}`,
+      }));
+
+      setMessages((current) => [...current, assistantMessage, ...referenceMessages]);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Request failed.";
-      setMessages((current) => [
-        ...current,
-        {
-          id: `error-${Date.now()}`,
-          role: "assistant",
-          content: message,
-        },
-      ]);
+      const failureMessage: ChatMessage = {
+        id: `error-${Date.now()}`,
+        role: "assistant",
+        content: message,
+      };
+
+      setMessages((current) => [...current, failureMessage]);
     } finally {
       setIsSending(false);
     }
