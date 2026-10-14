@@ -12,6 +12,7 @@ test("generateGeminiResponse returns a structured grounded response when the key
       generateContent: async () => ({
         text: JSON.stringify({
           answer: "The most relevant event is the export licensing change for advanced semiconductor chemicals.",
+          scopeStatus: "in_scope",
           evidenceStatus: "supported",
           references: [{ eventId: "evt_006", sourceName: "International Trade Controls Review" }],
         }),
@@ -50,7 +51,7 @@ test("generateGeminiResponse degrades malformed or empty model output to insuffi
 
     const emptyAnswerPayload = await generateGeminiResponse([{ role: "user", content: "What happened?" }], () => ({
         models: {
-          generateContent: async () => ({ text: JSON.stringify({ answer: "", evidenceStatus: "supported", references: [] }) }),
+          generateContent: async () => ({ text: JSON.stringify({ answer: "", scopeStatus: "in_scope", evidenceStatus: "supported", references: [] }) }),
         },
       }));
     assert.equal(emptyAnswerPayload.evidenceStatus, "insufficient");
@@ -74,6 +75,7 @@ test("generateGeminiResponse accepts insufficient evidence with no references", 
         generateContent: async () => ({
           text: JSON.stringify({
             answer: "The event dataset does not provide enough evidence to forecast interest-rate changes.",
+            scopeStatus: "in_scope",
             evidenceStatus: "insufficient",
             references: [],
           }),
@@ -83,6 +85,43 @@ test("generateGeminiResponse accepts insufficient evidence with no references", 
 
     assert.equal(payload.evidenceStatus, "insufficient");
     assert.deepEqual(payload.references, []);
+  } finally {
+    if (previous) {
+      process.env.GEMINI_API_KEY = previous;
+    } else {
+      delete process.env.GEMINI_API_KEY;
+    }
+  }
+});
+
+test("generateGeminiResponse returns the exact refusal for out-of-scope questions", async () => {
+  const previous = process.env.GEMINI_API_KEY;
+  process.env.GEMINI_API_KEY = "test-key";
+  let capturedContents = "";
+
+  try {
+    const payload = await generateGeminiResponse([{ role: "user", content: "Give me a recipe for pancakes." }], () => ({
+      models: {
+        generateContent: async ({ contents }) => {
+          capturedContents = contents;
+          return {
+            text: JSON.stringify({
+              answer: "Here's a pancake recipe.",
+              scopeStatus: "out_of_scope",
+              evidenceStatus: "supported",
+              references: [],
+            }),
+          };
+        },
+      },
+    }));
+
+    assert.equal(payload.answer, "I am not authorized to answer questions beyond my defined topics.");
+    assert.equal(payload.scopeStatus, "out_of_scope");
+    assert.equal(payload.evidenceStatus, "insufficient");
+    assert.deepEqual(payload.references, []);
+    assert.match(capturedContents, /PRIMARY RULE — SCOPE/);
+    assert.match(capturedContents, /Do not answer or engage in any conversation outside that scope/i);
   } finally {
     if (previous) {
       process.env.GEMINI_API_KEY = previous;
@@ -102,6 +141,7 @@ test("generateGeminiResponse downgrades unsupported citations to insufficient ev
           generateContent: async () => ({
             text: JSON.stringify({
               answer: "This is based on an event.",
+              scopeStatus: "in_scope",
               evidenceStatus: "supported",
               references: [{ eventId: "evt_999", sourceName: "Fake Source" }],
             }),
@@ -162,6 +202,7 @@ test("generateGeminiResponse includes the full conversation and the event datase
           return {
             text: JSON.stringify({
               answer: "The earliest cost pressure is likely power rationing, followed by semiconductor supply constraints.",
+              scopeStatus: "in_scope",
               evidenceStatus: "supported",
               references: [{ eventId: "evt_004", sourceName: "Regional Grid Operators Update" }],
             }),

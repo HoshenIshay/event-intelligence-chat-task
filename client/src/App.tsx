@@ -21,6 +21,7 @@ type Reference = {
 
 type ChatResponse = {
   answer?: string;
+  scopeStatus?: "in_scope" | "out_of_scope";
   evidenceStatus?: "not_evaluated" | "supported" | "insufficient";
   references?: Reference[];
   error?: string;
@@ -81,6 +82,7 @@ async function defaultSendMessage(content: string): Promise<ChatResponse> {
 
 const insufficientEvidenceAnswer =
   "I couldn't verify a reliable supporting source for this answer in the event dataset. Try rephrasing your question or asking about a specific event.";
+const offTopicRefusal = "I am not authorized to answer questions beyond my defined topics.";
 
 function isUsableReference(reference: unknown): reference is Reference {
   if (reference === null || typeof reference !== "object") {
@@ -144,11 +146,14 @@ function App({ sendMessage = defaultSendMessage }: AppProps) {
         : [];
       const answer = typeof response.answer === "string" ? response.answer.trim() : "";
       const lacksUsableEvidence = response.evidenceStatus === "supported" && references.length === 0;
+      const isOutOfScope = response.scopeStatus === "out_of_scope";
       const assistantMessage: ChatMessage = {
         id: `assistant-${Date.now()}`,
         role: "assistant",
-        content: answer && !lacksUsableEvidence ? answer : insufficientEvidenceAnswer,
-        references: lacksUsableEvidence || !answer ? [] : references,
+        content: isOutOfScope
+          ? offTopicRefusal
+          : answer && !lacksUsableEvidence ? answer : insufficientEvidenceAnswer,
+        references: isOutOfScope || lacksUsableEvidence || !answer ? [] : references,
       };
 
       setMessages((current) => [...current, assistantMessage]);

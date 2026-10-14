@@ -12,6 +12,7 @@ test("POST /api/chat accepts a valid request and returns a fake model response",
         answer: `Mock model response: ${content}`,
         evidenceStatus: "not_evaluated",
         references: [],
+        scopeStatus: "in_scope",
       };
     },
   });
@@ -62,6 +63,7 @@ test("POST /api/chat rejects malformed message payloads", async () => {
       answer: "should not be used",
       evidenceStatus: "not_evaluated",
       references: [],
+      scopeStatus: "in_scope",
     }),
   });
   const server = app.listen(0);
@@ -99,6 +101,7 @@ test("POST /api/chat rejects an empty latest user message", async () => {
       answer: "should not be used",
       evidenceStatus: "not_evaluated",
       references: [],
+      scopeStatus: "in_scope",
     }),
   });
   const server = app.listen(0);

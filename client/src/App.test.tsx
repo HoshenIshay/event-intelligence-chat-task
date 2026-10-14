@@ -13,6 +13,7 @@ describe("Event Intelligence Chat UI", () => {
   it("renders a successful answer with citations and clears the loading state", async () => {
     let resolveResponse: (value: {
       answer: string;
+      scopeStatus: "in_scope" | "out_of_scope";
       evidenceStatus: "not_evaluated" | "supported" | "insufficient";
       references: Array<{
         eventId: string;
@@ -30,6 +31,7 @@ describe("Event Intelligence Chat UI", () => {
       () =>
         new Promise<{
           answer: string;
+          scopeStatus: "in_scope" | "out_of_scope";
           evidenceStatus: "not_evaluated" | "supported" | "insufficient";
           references: Array<{
             eventId: string;
@@ -59,6 +61,7 @@ describe("Event Intelligence Chat UI", () => {
 
     resolveResponse!({
       answer: "The biggest near-term risk is semiconductor supply disruption.",
+      scopeStatus: "in_scope",
       evidenceStatus: "supported",
       references: [
         {
@@ -141,6 +144,26 @@ describe("Event Intelligence Chat UI", () => {
       expect(screen.getByText(/couldn't verify a reliable supporting source/i)).toBeInTheDocument();
     });
     expect(screen.queryByText("An unverified answer.")).not.toBeInTheDocument();
+    expect(screen.queryByRole("list", { name: /sources for this answer/i })).not.toBeInTheDocument();
+  });
+
+  it("replaces off-topic model content with the exact scope refusal", async () => {
+    const sendMessage = vi.fn().mockResolvedValue({
+      answer: "Here's a pancake recipe.",
+      scopeStatus: "out_of_scope",
+      evidenceStatus: "supported",
+      references: [],
+    });
+
+    render(<App sendMessage={sendMessage} />);
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText(/message input/i), "Give me a recipe for pancakes.");
+    await user.click(screen.getByRole("button", { name: /send/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText("I am not authorized to answer questions beyond my defined topics.")).toBeInTheDocument();
+    });
+    expect(screen.queryByText("Here's a pancake recipe.")).not.toBeInTheDocument();
     expect(screen.queryByRole("list", { name: /sources for this answer/i })).not.toBeInTheDocument();
   });
 
