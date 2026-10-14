@@ -8,6 +8,8 @@ type ChatMessage = {
   isError?: boolean;
 };
 
+type ChatTurn = Pick<ChatMessage, "role" | "content">;
+
 type Reference = {
   eventId: string;
   eventDate: string;
@@ -28,7 +30,7 @@ type ChatResponse = {
 };
 
 type AppProps = {
-  sendMessage?: (content: string) => Promise<ChatResponse>;
+  sendMessage?: (messages: ChatTurn[]) => Promise<ChatResponse>;
 };
 
 const suggestionPrompts = [
@@ -38,12 +40,12 @@ const suggestionPrompts = [
   "Which supply-chain events deserve attention?",
 ];
 
-async function defaultSendMessage(content: string): Promise<ChatResponse> {
+async function defaultSendMessage(messages: ChatTurn[]): Promise<ChatResponse> {
   const response = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      messages: [{ role: "user", content }],
+      messages,
     }),
   });
 
@@ -127,7 +129,13 @@ function App({ sendMessage = defaultSendMessage }: AppProps) {
     setIsSending(true);
 
     try {
-      const response = await sendMessage(trimmed);
+      const conversation: ChatTurn[] = [
+        ...messages
+          .filter((message) => !message.isError)
+          .map(({ role, content }) => ({ role, content })),
+        { role: userMessage.role, content: userMessage.content },
+      ];
+      const response = await sendMessage(conversation);
 
       if (response.error) {
         const errorMessage: ChatMessage = {

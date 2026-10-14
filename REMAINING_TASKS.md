@@ -4,11 +4,11 @@ This tracker records the outstanding items from the original Event Intelligence 
 
 ## 1. Send conversation history from the client
 
-- [ ] Update the client to send the full chronological conversation (previous user and assistant turns plus the new question) to `POST /api/chat`.
-- [ ] Add a client/API test proving that a follow-up request includes the earlier turns.
-- [ ] Verify a follow-up answer can use context from the prior exchange.
+- [x] Update the client to send the full chronological conversation (previous user and assistant turns plus the new question) to `POST /api/chat`.
+- [x] Add a client/API test proving that a follow-up request includes the earlier turns.
+- [x] Verify a follow-up answer can use context from the prior exchange.
 
-**Current status:** Incomplete. The server accepts and uses conversation history, but the client currently sends only the latest user message.
+**Current status:** Complete for the local application flow. The client sends prior non-error user and assistant turns with each follow-up. A client test asserts the outgoing HTTP request history, and a server test verifies that a supplied transcript reaches the grounding prompt. A live Gemini follow-up remains part of Task 2's provider verification.
 
 ## 2. Complete live Gemini verification
 

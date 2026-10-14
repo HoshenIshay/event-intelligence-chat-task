@@ -56,7 +56,9 @@ describe("Event Intelligence Chat UI", () => {
     await user.type(input, "Which events matter most?");
     await user.click(screen.getByRole("button", { name: /send/i }));
 
-    expect(sendMessage).toHaveBeenCalledWith("Which events matter most?");
+    expect(sendMessage).toHaveBeenCalledWith([
+      { role: "user", content: "Which events matter most?" },
+    ]);
     expect(screen.getByText(/thinking/i)).toBeInTheDocument();
 
     resolveResponse!({
@@ -105,6 +107,45 @@ describe("Event Intelligence Chat UI", () => {
     expect(screen.getByRole("link", { name: "https://example.com/events/evt_006" }))
       .toHaveAttribute("href", "https://example.com/events/evt_006");
     expect(screen.queryByText(/thinking/i)).not.toBeInTheDocument();
+  });
+
+  it("sends prior user and assistant turns with a follow-up request", async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        answer: "The semiconductor export controls (evt_006) and power rationing (evt_004) could affect Asteron.",
+        scopeStatus: "in_scope",
+        evidenceStatus: "insufficient",
+        references: [],
+      }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        answer: "Of those, power rationing could affect Asteron first.",
+        scopeStatus: "in_scope",
+        evidenceStatus: "insufficient",
+        references: [],
+      }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<App />);
+    const user = userEvent.setup();
+    const input = screen.getByLabelText(/message input/i);
+
+    await user.type(input, "Which events could affect Asteron?");
+    await user.click(screen.getByRole("button", { name: /send/i }));
+    await screen.findByText(/semiconductor export controls/i);
+
+    await user.type(input, "Which of those matters first?");
+    await user.click(screen.getByRole("button", { name: /send/i }));
+    await screen.findByText(/power rationing could affect Asteron first/i);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const secondRequest = fetchMock.mock.calls[1][1] as RequestInit;
+    expect(JSON.parse(String(secondRequest.body))).toEqual({
+      messages: [
+        { role: "user", content: "Which events could affect Asteron?" },
+        { role: "assistant", content: "The semiconductor export controls (evt_006) and power rationing (evt_004) could affect Asteron." },
+        { role: "user", content: "Which of those matters first?" },
+      ],
+    });
   });
 
   it("handles a failed API response without showing a successful assistant answer", async () => {
