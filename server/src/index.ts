@@ -73,7 +73,13 @@ const contextEvents = contextData.events ?? [];
 const validEventIds = new Set(contextEvents.map((event) => event.event_id));
 
 export function buildGeminiClient(apiKey: string): GeminiClientLike {
-  return new GoogleGenAI({ apiKey }) as unknown as GeminiClientLike;
+  return new GoogleGenAI({
+    apiKey,
+    httpOptions: {
+      timeout: 45_000,
+      retryOptions: { attempts: 1 },
+    },
+  }) as unknown as GeminiClientLike;
 }
 
 export function buildGroundingPrompt(messages: ChatMessage[]): string {
