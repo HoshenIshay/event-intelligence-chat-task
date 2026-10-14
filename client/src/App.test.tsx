@@ -14,7 +14,16 @@ describe("Event Intelligence Chat UI", () => {
     let resolveResponse: (value: {
       answer: string;
       evidenceStatus: "not_evaluated" | "supported" | "insufficient";
-      references: Array<{ eventId: string; sourceName: string }>;
+      references: Array<{
+        eventId: string;
+        eventDate: string;
+        title: string;
+        summary: string;
+        region: string;
+        domain: string;
+        sourceName: string;
+        sourceUrl: string;
+      }>;
     }) => void;
 
     const sendMessage = vi.fn(
@@ -22,7 +31,16 @@ describe("Event Intelligence Chat UI", () => {
         new Promise<{
           answer: string;
           evidenceStatus: "not_evaluated" | "supported" | "insufficient";
-          references: Array<{ eventId: string; sourceName: string }>;
+          references: Array<{
+            eventId: string;
+            eventDate: string;
+            title: string;
+            summary: string;
+            region: string;
+            domain: string;
+            sourceName: string;
+            sourceUrl: string;
+          }>;
         }>((resolve) => {
           resolveResponse = resolve;
         })
@@ -43,7 +61,26 @@ describe("Event Intelligence Chat UI", () => {
       answer: "The biggest near-term risk is semiconductor supply disruption.",
       evidenceStatus: "supported",
       references: [
-        { eventId: "evt_006", sourceName: "International Trade Controls Review" },
+        {
+          eventId: "evt_006",
+          eventDate: "2026-09-26",
+          title: "Export licensing introduced for two advanced semiconductor chemicals",
+          summary: "A major producing country introduced new export licensing requirements for two specialty chemicals used in advanced chip manufacturing, prompting manufacturers to review inventories and alternative suppliers.",
+          region: "Asia / Global",
+          domain: "Trade / Technology",
+          sourceName: "International Trade Controls Review",
+          sourceUrl: "https://example.com/events/evt_006",
+        },
+        {
+          eventId: "evt_004",
+          eventDate: "2026-09-27",
+          title: "Three countries introduce temporary industrial power rationing during heatwave",
+          summary: "Record temperatures pushed electricity demand to new highs while reducing generation efficiency, leading authorities to impose temporary power restrictions on some industrial users.",
+          region: "Southern Europe",
+          domain: "Climate / Energy",
+          sourceName: "Regional Grid Operators Update",
+          sourceUrl: "https://example.com/events/evt_004",
+        },
       ],
     });
 
@@ -51,8 +88,19 @@ describe("Event Intelligence Chat UI", () => {
       expect(screen.getByText(/The biggest near-term risk is semiconductor supply disruption\./i)).toBeInTheDocument();
     });
 
-    expect(screen.getByText(/evt_006/i)).toBeInTheDocument();
-    expect(screen.getByText(/International Trade Controls Review/i)).toBeInTheDocument();
+    const sourceList = screen.getByRole("list", { name: /sources for this answer/i });
+    expect(sourceList).toHaveClass("source-tags");
+    expect(sourceList.children).toHaveLength(2);
+    const firstTag = screen.getByRole("button", { name: /Source evt_006: International Trade Controls Review/i });
+    expect(firstTag).toHaveAttribute("aria-controls", expect.stringMatching(/^source-details-/));
+    const sourceDetails = screen.getByRole("group", { name: /Details for Export licensing introduced/i });
+    expect(sourceDetails).toHaveTextContent("2026-09-26");
+    expect(sourceDetails).toHaveTextContent("Asia / Global");
+    expect(sourceDetails).toHaveTextContent("Trade / Technology");
+    expect(sourceDetails).toHaveTextContent("International Trade Controls Review");
+    expect(sourceDetails).toHaveTextContent("A major producing country introduced new export licensing requirements");
+    expect(screen.getByRole("link", { name: "https://example.com/events/evt_006" }))
+      .toHaveAttribute("href", "https://example.com/events/evt_006");
     expect(screen.queryByText(/thinking/i)).not.toBeInTheDocument();
   });
 
@@ -77,6 +125,43 @@ describe("Event Intelligence Chat UI", () => {
     expect(screen.queryByText(/The biggest near-term risk is semiconductor supply disruption\./i)).not.toBeInTheDocument();
   });
 
+  it("does not show an answer as supported when its references are missing", async () => {
+    const sendMessage = vi.fn().mockResolvedValue({
+      answer: "An unverified answer.",
+      evidenceStatus: "supported",
+      references: [],
+    });
+
+    render(<App sendMessage={sendMessage} />);
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText(/message input/i), "What happened?");
+    await user.click(screen.getByRole("button", { name: /send/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/couldn't verify a reliable supporting source/i)).toBeInTheDocument();
+    });
+    expect(screen.queryByText("An unverified answer.")).not.toBeInTheDocument();
+    expect(screen.queryByRole("list", { name: /sources for this answer/i })).not.toBeInTheDocument();
+  });
+
+  it("shows a useful message instead of treating an empty successful response as an answer", async () => {
+    const sendMessage = vi.fn().mockResolvedValue({
+      answer: "   ",
+      evidenceStatus: "supported",
+      references: [],
+    });
+
+    render(<App sendMessage={sendMessage} />);
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText(/message input/i), "What happened?");
+    await user.click(screen.getByRole("button", { name: /send/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/couldn't verify a reliable supporting source/i)).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/No answer returned/i)).not.toBeInTheDocument();
+  });
+
   it("shows a useful error when the server returns an empty HTTP error response", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(
       new Response("", { status: 500 }),
@@ -89,7 +174,7 @@ describe("Event Intelligence Chat UI", () => {
     await user.click(screen.getByRole("button", { name: /send/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/empty response \(HTTP 500\)/i)).toBeInTheDocument();
+      expect(screen.getByText(/empty error response \(HTTP 500\)/i)).toBeInTheDocument();
     });
 
   });

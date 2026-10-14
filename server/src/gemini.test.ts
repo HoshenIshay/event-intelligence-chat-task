@@ -21,31 +21,40 @@ test("generateGeminiResponse returns a structured grounded response when the key
 
   assert.match(payload.answer, /semiconductor/i);
   assert.equal(payload.evidenceStatus, "supported");
-  assert.deepEqual(payload.references, [{ eventId: "evt_006", sourceName: "International Trade Controls Review" }]);
+  assert.deepEqual(payload.references, [{
+    eventId: "evt_006",
+    eventDate: "2026-09-26",
+    title: "Export licensing introduced for two advanced semiconductor chemicals",
+    summary: "A major producing country introduced new export licensing requirements for two specialty chemicals used in advanced chip manufacturing, prompting manufacturers to review inventories and alternative suppliers.",
+    region: "Asia / Global",
+    domain: "Trade / Technology",
+    sourceName: "International Trade Controls Review",
+    sourceUrl: "https://example.com/events/evt_006",
+  }]);
 });
 
-test("generateGeminiResponse rejects malformed or empty model output", async () => {
+test("generateGeminiResponse degrades malformed or empty model output to insufficient evidence", async () => {
   const previous = process.env.GEMINI_API_KEY;
   process.env.GEMINI_API_KEY = "test-key";
 
   try {
-    await assert.rejects(
-      () => generateGeminiResponse([{ role: "user", content: "What happened?" }], () => ({
+    const malformedPayload = await generateGeminiResponse([{ role: "user", content: "What happened?" }], () => ({
         models: {
           generateContent: async () => ({ text: "not-json" }),
         },
-      })),
-      /Gemini request failed:.*JSON|Unexpected token|not valid JSON/i,
-    );
+      }));
 
-    await assert.rejects(
-      () => generateGeminiResponse([{ role: "user", content: "What happened?" }], () => ({
+    assert.equal(malformedPayload.evidenceStatus, "insufficient");
+    assert.equal(malformedPayload.references.length, 0);
+    assert.match(malformedPayload.answer, /couldn't verify a reliable supporting source/i);
+
+    const emptyAnswerPayload = await generateGeminiResponse([{ role: "user", content: "What happened?" }], () => ({
         models: {
           generateContent: async () => ({ text: JSON.stringify({ answer: "", evidenceStatus: "supported", references: [] }) }),
         },
-      })),
-      /answer cannot be empty/i,
-    );
+      }));
+    assert.equal(emptyAnswerPayload.evidenceStatus, "insufficient");
+    assert.equal(emptyAnswerPayload.references.length, 0);
   } finally {
     if (previous) {
       process.env.GEMINI_API_KEY = previous;
@@ -83,13 +92,12 @@ test("generateGeminiResponse accepts insufficient evidence with no references", 
   }
 });
 
-test("generateGeminiResponse rejects unknown event IDs in model references", async () => {
+test("generateGeminiResponse downgrades unsupported citations to insufficient evidence", async () => {
   const previous = process.env.GEMINI_API_KEY;
   process.env.GEMINI_API_KEY = "test-key";
 
   try {
-    await assert.rejects(
-      () => generateGeminiResponse([{ role: "user", content: "Which events matter most?" }], () => ({
+    const payload = await generateGeminiResponse([{ role: "user", content: "Which events matter most?" }], () => ({
         models: {
           generateContent: async () => ({
             text: JSON.stringify({
@@ -99,9 +107,32 @@ test("generateGeminiResponse rejects unknown event IDs in model references", asy
             }),
           }),
         },
-      })),
-      /Reference eventId 'evt_999' is not present/i,
-    );
+      }));
+    assert.equal(payload.evidenceStatus, "insufficient");
+    assert.deepEqual(payload.references, []);
+    assert.match(payload.answer, /couldn't verify a reliable supporting source/i);
+  } finally {
+    if (previous) {
+      process.env.GEMINI_API_KEY = previous;
+    } else {
+      delete process.env.GEMINI_API_KEY;
+    }
+  }
+});
+
+test("generateGeminiResponse returns insufficient evidence when the provider response is empty", async () => {
+  const previous = process.env.GEMINI_API_KEY;
+  process.env.GEMINI_API_KEY = "test-key";
+
+  try {
+    const payload = await generateGeminiResponse([{ role: "user", content: "What happened?" }], () => ({
+      models: {
+        generateContent: async () => ({ text: "  " }),
+      },
+    }));
+    assert.equal(payload.evidenceStatus, "insufficient");
+    assert.deepEqual(payload.references, []);
+    assert.match(payload.answer, /couldn't verify a reliable supporting source/i);
   } finally {
     if (previous) {
       process.env.GEMINI_API_KEY = previous;

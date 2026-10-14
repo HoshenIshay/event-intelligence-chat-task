@@ -153,11 +153,43 @@ test("POST /api/chat returns a provider error without a success schema", async (
       body: JSON.stringify({ messages: [{ role: "user", content: "What happened?" }] }),
     });
 
-    assert.equal(response.status, 500);
+    assert.equal(response.status, 502);
 
-    const payload = (await response.json()) as { error: string };
-    assert.match(payload.error, /Gemini request failed/i);
+    const payload = (await response.json()) as { error: string; detail: string };
+    assert.match(payload.error, /couldn't complete your request/i);
+    assert.match(payload.detail, /Gemini request failed/i);
     assert.doesNotMatch(JSON.stringify(payload), /"answer"/i);
+  } finally {
+    await new Promise<void>((resolve, reject) => {
+      server.close((error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve();
+      });
+    });
+  }
+});
+
+test("POST /api/chat returns a JSON error for malformed JSON", async () => {
+  const app = createApp();
+  const server = app.listen(0);
+
+  await new Promise<void>((resolve) => server.once("listening", resolve));
+
+  try {
+    const { port } = server.address() as AddressInfo;
+    const response = await fetch(`http://127.0.0.1:${port}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{",
+    });
+
+    assert.equal(response.status, 400);
+    assert.match(response.headers.get("content-type") ?? "", /application\/json/i);
+    const payload = (await response.json()) as { error: string };
+    assert.match(payload.error, /valid JSON/i);
   } finally {
     await new Promise<void>((resolve, reject) => {
       server.close((error) => {

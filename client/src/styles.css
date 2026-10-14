@@ -98,6 +98,15 @@ button, input, textarea {
   justify-content: flex-end;
 }
 
+.message-group.assistant {
+  width: fit-content;
+  max-width: min(72%, 620px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+}
+
 .message {
   max-width: min(72%, 620px);
   border-radius: 18px;
@@ -111,6 +120,182 @@ button, input, textarea {
   background: #ffffff;
   border: 1px solid rgba(148, 163, 184, 0.25);
   color: #0f172a;
+}
+
+.message-group.assistant .message {
+  max-width: 100%;
+}
+
+.source-tags {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 1px 4px;
+}
+
+.source-tag-container {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.source-tag-container:hover,
+.source-tag-container:focus-within {
+  z-index: 6;
+}
+
+.source-tag-container::after {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 310px;
+  height: 10px;
+  content: "";
+}
+
+.source-tag {
+  min-height: 21px;
+  max-width: 140px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  font-family: inherit;
+  overflow: hidden;
+  color: #647768;
+  background: #f5f8f4;
+  border: 1px solid #e5ebe3;
+  border-radius: 999px;
+  font-size: 9px;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: help;
+  appearance: none;
+  transition: color 150ms ease, border-color 150ms ease, background 150ms ease;
+}
+
+.source-tag:hover,
+.source-tag:focus-visible {
+  color: #3e624d;
+  background: #edf4ec;
+  border-color: #bfcebF;
+}
+
+.source-tag:focus-visible {
+  outline: 2px solid rgba(83, 123, 105, 0.3);
+  outline-offset: 2px;
+}
+
+.source-popover {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 8px);
+  left: 0;
+  width: min(310px, calc(100vw - 36px));
+  padding: 16px;
+  color: #39463d;
+  background: #fff;
+  border: 1px solid #e5ebe3;
+  border-radius: 13px;
+  box-shadow: 0 15px 40px rgba(36, 52, 39, 0.16), 0 3px 10px rgba(36, 52, 39, 0.06);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition: opacity 140ms ease, transform 140ms ease, visibility 140ms ease;
+}
+
+.source-tag-container:hover .source-popover,
+.source-tag-container:focus-within .source-popover {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.source-popover-eyebrow {
+  display: block;
+  margin-bottom: 7px;
+  color: #91a091;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.1px;
+}
+
+.source-popover-title {
+  display: block;
+  color: #35443a;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.source-popover-summary {
+  margin: 7px 0 12px;
+  color: #737f75;
+  font-size: 10px;
+  line-height: 1.65;
+}
+
+.source-popover-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  margin: 0;
+  padding: 11px 0;
+  border-top: 1px solid #edf0eb;
+  border-bottom: 1px solid #edf0eb;
+}
+
+.source-popover-fields div {
+  min-width: 0;
+}
+
+.source-popover-fields dt {
+  margin-bottom: 3px;
+  color: #9aa39b;
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.source-popover-fields dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #56645a;
+  font-size: 9px;
+  line-height: 1.45;
+}
+
+.source-popover-url {
+  grid-column: 1 / -1;
+}
+
+.source-popover-url a {
+  color: #557a62;
+  font-size: 9px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.source-popover-url a:hover {
+  color: #355a42;
+  text-decoration: underline;
+}
+
+.source-tag-dot {
+  width: 5px;
+  height: 5px;
+  flex: 0 0 auto;
+  background: #89a78c;
+  border-radius: 50%;
+}
+
+.source-tag-id {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .message.user {

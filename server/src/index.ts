@@ -34,6 +34,8 @@ const contextData = JSON.parse(readFileSync(contextPath, "utf8")) as {
   }>;
 };
 
+type ContextEvent = NonNullable<typeof contextData.events>[number];
+
 export type ChatRole = "user" | "assistant" | "system";
 
 export type ChatMessage = {
@@ -48,16 +50,36 @@ export type ChatRequestBody = {
 export type ChatResponseBody = {
   answer: string;
   evidenceStatus: "not_evaluated" | "supported" | "insufficient";
-  references: Array<{ eventId: string; sourceName: string }>;
+  references: EventReference[];
 };
 
-export type EventReference = { eventId: string; sourceName: string };
+export type EventReference = {
+  eventId: string;
+  eventDate: string;
+  title: string;
+  summary: string;
+  region: string;
+  domain: string;
+  sourceName: string;
+  sourceUrl: string;
+};
 
 export type GroundedResponse = {
   answer: string;
   evidenceStatus: "supported" | "insufficient";
   references: EventReference[];
 };
+
+const INSUFFICIENT_EVIDENCE_ANSWER =
+  "I couldn't verify a reliable supporting source for this answer in the event dataset. Try rephrasing your question or asking about a specific event.";
+
+function insufficientGroundedResponse(answer = INSUFFICIENT_EVIDENCE_ANSWER): GroundedResponse {
+  return {
+    answer,
+    evidenceStatus: "insufficient",
+    references: [],
+  };
+}
 
 export type ChatAppOptions = {
   generateChatResponse?: (messages: ChatMessage[]) => Promise<ChatResponseBody>;
@@ -70,7 +92,6 @@ export type GeminiClientLike = {
 };
 
 const contextEvents = contextData.events ?? [];
-const validEventIds = new Set(contextEvents.map((event) => event.event_id));
 
 export function buildGeminiClient(apiKey: string): GeminiClientLike {
   return new GoogleGenAI({
@@ -159,22 +180,22 @@ export function validateGroundedResponse(value: unknown): GroundedResponse {
   const evidenceStatus = candidate.evidenceStatus;
   const references = candidate.references;
 
-  if (typeof answer !== "string" || answer.trim().length === 0) {
-    throw new Error("Model response answer cannot be empty.");
-  }
-
   if (evidenceStatus !== "supported" && evidenceStatus !== "insufficient") {
     throw new Error("Model response evidenceStatus must be 'supported' or 'insufficient'.");
   }
 
+  if (typeof answer !== "string" || answer.trim().length === 0) {
+    return insufficientGroundedResponse();
+  }
+
   if (!Array.isArray(references)) {
-    throw new Error("Model response references must be an array.");
+    return insufficientGroundedResponse();
   }
 
   const validReferences: EventReference[] = [];
   for (const reference of references) {
     if (reference === null || typeof reference !== "object" || Array.isArray(reference)) {
-      throw new Error("Each reference must be an object with eventId and sourceName.");
+      continue;
     }
 
     const entry = reference as Record<string, unknown>;
@@ -182,23 +203,28 @@ export function validateGroundedResponse(value: unknown): GroundedResponse {
     const sourceName = entry.sourceName;
 
     if (typeof eventId !== "string" || typeof sourceName !== "string") {
-      throw new Error("Each reference must include string eventId and sourceName values.");
+      continue;
     }
 
-    if (!validEventIds.has(eventId)) {
-      throw new Error(`Reference eventId '${eventId}' is not present in the supplied dataset.`);
-    }
-
-    const matchedEvent = contextEvents.find((event) => event.event_id === eventId);
+    const matchedEvent: ContextEvent | undefined = contextEvents.find((event) => event.event_id === eventId);
     if (!matchedEvent || matchedEvent.source_name !== sourceName) {
-      throw new Error(`Reference sourceName for '${eventId}' does not match the dataset.`);
+      continue;
     }
 
-    validReferences.push({ eventId, sourceName });
+    validReferences.push({
+      eventId: matchedEvent.event_id,
+      eventDate: matchedEvent.event_date,
+      title: matchedEvent.title,
+      summary: matchedEvent.summary,
+      region: matchedEvent.region,
+      domain: matchedEvent.domain,
+      sourceName: matchedEvent.source_name,
+      sourceUrl: matchedEvent.source_url,
+    });
   }
 
   if (evidenceStatus === "supported" && validReferences.length === 0) {
-    throw new Error("Supported responses must include at least one event reference.");
+    return insufficientGroundedResponse();
   }
 
   return {
@@ -277,34 +303,34 @@ export async function generateGeminiResponse(
     throw new Error("Gemini API key is not configured.");
   }
 
+  let result: { text?: string };
   try {
     const ai = clientFactory(apiKey);
     const prompt = buildGroundingPrompt(messages);
-
-    const result = await ai.models.generateContent({
+    result = await ai.models.generateContent({
       model: "gemini-3.8-flash",
       contents: prompt,
     });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown Gemini provider error.";
+    throw new Error(`Gemini request failed: ${message}`);
+  }
 
-    const rawText = typeof result.text === "string" && result.text.trim().length > 0
-      ? result.text.trim()
-      : "";
+  const rawText = typeof result.text === "string" ? result.text.trim() : "";
+  if (!rawText) {
+    return insufficientGroundedResponse();
+  }
 
-    if (!rawText) {
-      throw new Error("Gemini returned an empty response.");
-    }
-
+  try {
     const parsed = parseJsonObject(rawText);
     const validated = validateGroundedResponse(parsed);
-
     return {
       answer: validated.answer,
       evidenceStatus: validated.evidenceStatus,
       references: validated.references,
     };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown Gemini provider error.";
-    throw new Error(`Gemini request failed: ${message}`);
+  } catch {
+    return insufficientGroundedResponse();
   }
 }
 
@@ -319,15 +345,37 @@ export function createApp(options: ChatAppOptions = {}) {
   });
 
   app.post("/api/chat", async (request: Request, response: Response) => {
+    let messages: ChatMessage[];
     try {
-      const messages = validateChatRequest(request.body);
+      messages = validateChatRequest(request.body);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Malformed chat request.";
+      response.status(400).json({ error: message });
+      return;
+    }
+
+    try {
       const payload = await generateChatResponse(messages);
       response.status(200).json(payload);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Malformed chat request.";
-      const status = message.includes("Gemini") || message.includes("configured") ? 500 : 400;
-      response.status(status).json({ error: message });
+      const detail = error instanceof Error ? error.message : "Unknown chat service error.";
+      console.error("Chat request failed:", detail);
+      response.status(502).json({
+        error: "The chat service couldn't complete your request. Please try again.",
+        detail,
+      });
     }
+  });
+
+  app.use((error: unknown, _request: Request, response: Response, _next: (error?: unknown) => void) => {
+    const parserError = error !== null && typeof error === "object"
+      ? error as { status?: number; type?: string }
+      : {};
+    const status = parserError.status === 413 ? 413 : 400;
+    const message = parserError.type === "entity.too.large"
+      ? "The request is too large."
+      : "The request body must contain valid JSON.";
+    response.status(status).json({ error: message });
   });
 
   return app;
