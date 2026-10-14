@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "validate:data": "node scripts/validate-context.mjs",
-    "test": "tsx --test src/**/*.test.ts"
+    "test": "tsx --test src/**/*.test.ts",
+    "eval:live": "tsx src/eval.ts"
   },
   "dependencies": {
     "@google/genai": "^1.15.0",

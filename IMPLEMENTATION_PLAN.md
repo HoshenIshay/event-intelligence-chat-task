@@ -51,7 +51,7 @@ Work through these ten independently verifiable tasks in order. Mark each checkb
 
 ## 9. Add focused tests and Gemini evaluations
 
-- [ ] Keep routine tests repeatable without credentials by mocking Gemini. Add an opt-in evaluation command using a real Gemini key, checking response shape and allowed references rather than exact wording.
+- [x] Keep routine tests repeatable without credentials by mocking Gemini. Add an opt-in evaluation command using a real Gemini key, checking response shape and allowed references rather than exact wording.
 - Include cases for company-relevant risks, comparing semiconductor and power events (`evt_006`, `evt_004`), AI/automation opportunities, a follow-up question, and unsupported interest-rate predictions.
 - **Verify:** the mocked suite runs without a key; the live evaluation reports whether each response meets the checks when configured with one.
 
