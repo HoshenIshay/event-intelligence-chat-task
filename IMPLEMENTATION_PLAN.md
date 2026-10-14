@@ -28,8 +28,8 @@ Work through these ten independently verifiable tasks in order. Mark each checkb
 
 ## 5. Build the grounding prompt and response validator
 
-- [ ] Instruct Gemini to use supplied events for event facts, treat the company profile as relevance context rather than evidence, distinguish event facts from Asteron-specific analysis, and say when evidence is insufficient.
-- Require structured output with an answer, evidence status, and event IDs. Validate the JSON and reject empty answers or IDs absent from the supplied dataset. Allow an insufficient-evidence answer with no event references.
+- [x] Instruct Gemini to use supplied events for event facts, treat the company profile as relevance context rather than evidence, distinguish event facts from Asteron-specific analysis, and say when evidence is insufficient.
+- [x] Require structured output with an answer, evidence status, and event IDs. Validate the JSON and reject empty answers or IDs absent from the supplied dataset. Allow an insufficient-evidence answer with no event references.
 - **Verify:** unit tests cover valid output, malformed or empty output, unknown IDs, and insufficient evidence.
 
 ## 6. Preserve multi-turn context
