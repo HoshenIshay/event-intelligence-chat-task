@@ -34,14 +34,14 @@ Work through these ten independently verifiable tasks in order. Mark each checkb
 
 ## 6. Preserve multi-turn context
 
-- [ ] On each request, provide the conversation so far alongside the company profile and all 30 events.
-- Keep the server stateless; do not add accounts, stored sessions, or a chat database.
+- [x] On each request, provide the conversation so far alongside the company profile and all 30 events.
+- [x] Keep the server stateless; do not add accounts, stored sessions, or a chat database.
 - **Verify:** a repeatable test checks that a follow-up such as “Which of those could affect our cost base first?” is sent with the earlier question and answer.
 
 ## 7. Build the minimalist chat interface
 
-- [ ] Implement a responsive single-conversation view with readable message bubbles, a composer, send control, and clear empty state.
-- Keep the visual design restrained and modern; omit sidebars, account controls, and features not requested in the brief.
+- [x] Implement a responsive single-conversation view with readable message bubbles, a composer, send control, and clear empty state.
+- [x] Keep the visual design restrained and modern; omit sidebars, account controls, and features not requested in the brief.
 - **Verify:** the UI renders at desktop and mobile widths, and the composer submits a message through a mock send handler.
 
 ## 8. Connect the UI to the chat API

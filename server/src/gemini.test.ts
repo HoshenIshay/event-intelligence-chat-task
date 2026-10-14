@@ -111,6 +111,49 @@ test("generateGeminiResponse rejects unknown event IDs in model references", asy
   }
 });
 
+test("generateGeminiResponse includes the full conversation and the event dataset in the prompt for follow-up questions", async () => {
+  const previous = process.env.GEMINI_API_KEY;
+  process.env.GEMINI_API_KEY = "test-key";
+
+  let capturedContents = "";
+
+  try {
+    const messages = [
+      { role: "user", content: "Which events matter most for industrial costs?" },
+      { role: "assistant", content: "Semiconductor supply and power rationing are the biggest near-term risks." },
+      { role: "user", content: "Which of those could affect our cost base first?" },
+    ] as const;
+
+    const payload = await generateGeminiResponse(messages, () => ({
+      models: {
+        generateContent: async ({ contents }) => {
+          capturedContents = contents;
+          return {
+            text: JSON.stringify({
+              answer: "The earliest cost pressure is likely power rationing, followed by semiconductor supply constraints.",
+              evidenceStatus: "supported",
+              references: [{ eventId: "evt_004", sourceName: "Regional Grid Operators Update" }],
+            }),
+          };
+        },
+      },
+    }));
+
+    assert.equal(payload.evidenceStatus, "supported");
+    assert.match(capturedContents, /Which events matter most for industrial costs\?/i);
+    assert.match(capturedContents, /Semiconductor supply and power rationing are the biggest near-term risks\./i);
+    assert.match(capturedContents, /Which of those could affect our cost base first\?/i);
+    assert.match(capturedContents, /evt_004/i);
+    assert.match(capturedContents, /Regional Grid Operators Update/i);
+  } finally {
+    if (previous) {
+      process.env.GEMINI_API_KEY = previous;
+    } else {
+      delete process.env.GEMINI_API_KEY;
+    }
+  }
+});
+
 test("generateGeminiResponse throws when the API key is missing", async () => {
   const previous = process.env.GEMINI_API_KEY;
   delete process.env.GEMINI_API_KEY;
