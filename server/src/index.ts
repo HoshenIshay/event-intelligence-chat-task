@@ -1,4 +1,5 @@
 import express, { type Request, type Response } from "express";
+import { GoogleGenAI } from "@google/genai";
 import { pathToFileURL } from "node:url";
 
 export type ChatRole = "user" | "assistant" | "system";
@@ -17,6 +18,20 @@ export type ChatResponseBody = {
   evidenceStatus: "not_evaluated" | "supported" | "insufficient";
   references: Array<{ eventId: string; sourceName: string }>;
 };
+
+export type ChatAppOptions = {
+  generateChatResponse?: (messages: ChatMessage[]) => Promise<ChatResponseBody>;
+};
+
+export type GeminiClientLike = {
+  models: {
+    generateContent: (input: { model: string; contents: string }) => Promise<{ text?: string }>;
+  };
+};
+
+export function buildGeminiClient(apiKey: string): GeminiClientLike {
+  return new GoogleGenAI({ apiKey }) as unknown as GeminiClientLike;
+}
 
 function ensureObject(value: unknown): asserts value is Record<string, unknown> {
   if (value === null || typeof value !== "object" || Array.isArray(value)) {
@@ -78,8 +93,44 @@ export function generateFakeModelResponse(messages: ChatMessage[]): ChatResponse
   };
 }
 
-export function createApp() {
+export async function generateGeminiResponse(
+  messages: ChatMessage[],
+  clientFactory: (apiKey: string) => GeminiClientLike = buildGeminiClient,
+): Promise<ChatResponseBody> {
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  if (!apiKey) {
+    throw new Error("Gemini API key is not configured.");
+  }
+
+  try {
+    const ai = clientFactory(apiKey);
+    const prompt = messages
+      .map((message) => `${message.role.toUpperCase()}: ${message.content}`)
+      .join("\n");
+
+    const result = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+    });
+
+    const answer = typeof result.text === "string" && result.text.trim().length > 0
+      ? result.text.trim()
+      : "Gemini returned an empty response.";
+
+    return {
+      answer,
+      evidenceStatus: "not_evaluated",
+      references: [],
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown Gemini provider error.";
+    throw new Error(`Gemini request failed: ${message}`);
+  }
+}
+
+export function createApp(options: ChatAppOptions = {}) {
   const app = express();
+  const generateChatResponse = options.generateChatResponse ?? generateGeminiResponse;
 
   app.use(express.json({ limit: "1mb" }));
 
@@ -87,14 +138,15 @@ export function createApp() {
     response.json({ status: "ok" });
   });
 
-  app.post("/api/chat", (request: Request, response: Response) => {
+  app.post("/api/chat", async (request: Request, response: Response) => {
     try {
       const messages = validateChatRequest(request.body);
-      const payload = generateFakeModelResponse(messages);
+      const payload = await generateChatResponse(messages);
       response.status(200).json(payload);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Malformed chat request.";
-      response.status(400).json({ error: message });
+      const status = message.includes("Gemini") || message.includes("configured") ? 500 : 400;
+      response.status(status).json({ error: message });
     }
   });
 

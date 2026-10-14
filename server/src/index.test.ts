@@ -5,7 +5,16 @@ import type { AddressInfo } from "node:net";
 import { createApp } from "./index.js";
 
 test("POST /api/chat accepts a valid request and returns a fake model response", async () => {
-  const app = createApp();
+  const app = createApp({
+    generateChatResponse: async (messages) => {
+      const content = messages.at(-1)?.content ?? "";
+      return {
+        answer: `Mock model response: ${content}`,
+        evidenceStatus: "not_evaluated",
+        references: [],
+      };
+    },
+  });
   const server = app.listen(0);
 
   await new Promise<void>((resolve) => server.once("listening", resolve));
@@ -17,8 +26,8 @@ test("POST /api/chat accepts a valid request and returns a fake model response",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         messages: [
-          { role: "user", content: "Which events matter most?" },
           { role: "assistant", content: "I can help with that." },
+          { role: "user", content: "Which events matter most?" },
         ],
       }),
     });
@@ -48,7 +57,13 @@ test("POST /api/chat accepts a valid request and returns a fake model response",
 });
 
 test("POST /api/chat rejects malformed message payloads", async () => {
-  const app = createApp();
+  const app = createApp({
+    generateChatResponse: async () => ({
+      answer: "should not be used",
+      evidenceStatus: "not_evaluated",
+      references: [],
+    }),
+  });
   const server = app.listen(0);
 
   await new Promise<void>((resolve) => server.once("listening", resolve));
@@ -79,7 +94,13 @@ test("POST /api/chat rejects malformed message payloads", async () => {
 });
 
 test("POST /api/chat rejects an empty latest user message", async () => {
-  const app = createApp();
+  const app = createApp({
+    generateChatResponse: async () => ({
+      answer: "should not be used",
+      evidenceStatus: "not_evaluated",
+      references: [],
+    }),
+  });
   const server = app.listen(0);
 
   await new Promise<void>((resolve) => server.once("listening", resolve));
@@ -101,6 +122,42 @@ test("POST /api/chat rejects an empty latest user message", async () => {
 
     const payload = (await response.json()) as { error: string };
     assert.match(payload.error, /empty/i);
+  } finally {
+    await new Promise<void>((resolve, reject) => {
+      server.close((error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+        resolve();
+      });
+    });
+  }
+});
+
+test("POST /api/chat returns a provider error without a success schema", async () => {
+  const app = createApp({
+    generateChatResponse: async () => {
+      throw new Error("Gemini request failed: quota exceeded");
+    },
+  });
+  const server = app.listen(0);
+
+  await new Promise<void>((resolve) => server.once("listening", resolve));
+
+  try {
+    const { port } = server.address() as AddressInfo;
+    const response = await fetch(`http://127.0.0.1:${port}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: [{ role: "user", content: "What happened?" }] }),
+    });
+
+    assert.equal(response.status, 500);
+
+    const payload = (await response.json()) as { error: string };
+    assert.match(payload.error, /Gemini request failed/i);
+    assert.doesNotMatch(JSON.stringify(payload), /"answer"/i);
   } finally {
     await new Promise<void>((resolve, reject) => {
       server.close((error) => {

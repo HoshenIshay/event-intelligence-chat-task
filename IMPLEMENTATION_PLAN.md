@@ -22,7 +22,7 @@ Work through these ten independently verifiable tasks in order. Mark each checkb
 
 ## 4. Connect the server to Gemini
 
-- [ ] Use the Gemini Node SDK from the server only. Read the API key from a server-side environment variable and provide an example environment file with no secret.
+- [x] Use the Gemini Node SDK from the server only. Read the API key from a server-side environment variable and provide an example environment file with no secret.
 - Handle missing configuration and provider/API errors without returning a success-shaped answer.
 - **Verify:** a mocked provider test confirms request and error handling; a manual smoke test with a real key confirms the server can make a Gemini request.
 
