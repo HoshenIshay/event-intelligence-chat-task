@@ -46,7 +46,7 @@ Work through these ten independently verifiable tasks in order. Mark each checkb
 
 ## 8. Connect the UI to the chat API
 
-- [ ] Replace the mock handler with the server call. Show a loading state while awaiting Gemini, display provider or parsing errors clearly, and render validated event references (at least event ID and source name) with the answer.
+- [x] Replace the mock handler with the server call. Show a loading state while awaiting Gemini, display provider or parsing errors clearly, and render validated event references (at least event ID and source name) with the answer.
 - **Verify:** a mock API test covers a successful answer with citations and an error response; failed requests do not appear as successful assistant answers.
 
 ## 9. Add focused tests and Gemini evaluations
