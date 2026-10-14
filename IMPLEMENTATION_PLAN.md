@@ -16,7 +16,7 @@ Work through these ten independently verifiable tasks in order. Mark each checkb
 
 ## 3. Define the chat API contract
 
-- [ ] Add `POST /api/chat` accepting chronological `{ role, content }` messages and returning a documented shape such as `{ answer, evidenceStatus, references }`.
+- [x] Add `POST /api/chat` accepting chronological `{ role, content }` messages and returning a documented shape such as `{ answer, evidenceStatus, references }`.
 - Validate requests and return explicit errors for malformed input. Use a fake model response in route tests.
 - **Verify:** tests cover a valid request, invalid message shape, and an empty latest user message without calling Gemini.
 

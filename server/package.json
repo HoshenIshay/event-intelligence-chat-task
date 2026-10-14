@@ -7,7 +7,8 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "validate:data": "node scripts/validate-context.mjs"
+    "validate:data": "node scripts/validate-context.mjs",
+    "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
     "express": "^5.1.0"
