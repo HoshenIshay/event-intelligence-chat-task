@@ -102,7 +102,13 @@ export type ChatAppOptions = {
 
 export type GeminiClientLike = {
   models: {
-    generateContent: (input: { model: string; contents: string }) => Promise<{ text?: string }>;
+    generateContent: (input: {
+      model: string;
+      contents: string;
+      config?: {
+        responseMimeType?: string;
+      };
+    }) => Promise<{ text?: string }>;
   };
 };
 
@@ -188,13 +194,35 @@ Rules:
 - If the question is unsupported by the provided facts, answer plainly and set evidenceStatus to "insufficient".`;
 }
 
-function parseJsonObject(raw: string): unknown {
+export function parseJsonObject(raw: string): unknown {
   const trimmed = raw.trim();
-  const withoutCodeFence = trimmed.startsWith("```")
-    ? trimmed.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "")
-    : trimmed;
 
-  return JSON.parse(withoutCodeFence);
+  // 1. Direct parse attempt
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    // Continue with resilient extraction
+  }
+
+  // 2. Extract content from markdown code fences if present (e.g. ```json ... ```)
+  const codeBlockMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (codeBlockMatch?.[1]) {
+    try {
+      return JSON.parse(codeBlockMatch[1].trim());
+    } catch {
+      // Continue to bracket extraction
+    }
+  }
+
+  // 3. Extract the outermost JSON object between first '{' and last '}'
+  const firstBrace = trimmed.indexOf("{");
+  const lastBrace = trimmed.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace > firstBrace) {
+    const candidate = trimmed.slice(firstBrace, lastBrace + 1).trim();
+    return JSON.parse(candidate);
+  }
+
+  throw new Error("No valid JSON object found in model output.");
 }
 
 export function validateGroundedResponse(value: unknown): GroundedResponse {
@@ -348,6 +376,9 @@ export async function generateGeminiResponse(
     result = await ai.models.generateContent({
       model: "gemini-3.8-flash",
       contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+      },
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown Gemini provider error.";

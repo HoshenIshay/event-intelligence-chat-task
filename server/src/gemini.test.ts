@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { generateGeminiResponse, type ChatMessage } from "./index.js";
+import { generateGeminiResponse, parseJsonObject, type ChatMessage } from "./index.js";
 
 test("generateGeminiResponse returns a structured grounded response when the key is set and the client succeeds", async () => {
   const messages: ChatMessage[] = [{ role: "user", content: "Which events matter most?" }];
@@ -264,4 +264,61 @@ test("generateGeminiResponse throws provider errors without a success-shaped pay
       delete process.env.GEMINI_API_KEY;
     }
   }
+});
+
+test("generateGeminiResponse passes responseMimeType application/json in config", async () => {
+  const previous = process.env.GEMINI_API_KEY;
+  process.env.GEMINI_API_KEY = "test-key";
+  let capturedConfig: { responseMimeType?: string } | undefined;
+
+  try {
+    await generateGeminiResponse([{ role: "user", content: "Which events matter most?" }], () => ({
+      models: {
+        generateContent: async ({ config }) => {
+          capturedConfig = config;
+          return {
+            text: JSON.stringify({
+              answer: "The semiconductor chemicals event is relevant.",
+              scopeStatus: "in_scope",
+              evidenceStatus: "supported",
+              references: [{ eventId: "evt_006", sourceName: "International Trade Controls Review" }],
+            }),
+          };
+        },
+      },
+    }));
+
+    assert.equal(capturedConfig?.responseMimeType, "application/json");
+  } finally {
+    if (previous) {
+      process.env.GEMINI_API_KEY = previous;
+    } else {
+      delete process.env.GEMINI_API_KEY;
+    }
+  }
+});
+
+test("parseJsonObject resiliently parses direct JSON, markdown code fences, and surrounding commentary", () => {
+  // Direct JSON
+  const direct = parseJsonObject('{"answer": "test", "scopeStatus": "in_scope"}') as Record<string, unknown>;
+  assert.equal(direct.answer, "test");
+
+  // Markdown code fence with json identifier
+  const fenced = parseJsonObject('```json\n{"answer": "fenced"}\n```') as Record<string, unknown>;
+  assert.equal(fenced.answer, "fenced");
+
+  // Conversational preamble and epilogue around code fences
+  const surrounded = parseJsonObject(
+    'Here is the response:\n```json\n{"answer": "surrounded"}\n```\nHope this helps!'
+  ) as Record<string, unknown>;
+  assert.equal(surrounded.answer, "surrounded");
+
+  // Unfenced JSON embedded in conversational text
+  const embedded = parseJsonObject(
+    'Sure! {"answer": "embedded"} - end of response.'
+  ) as Record<string, unknown>;
+  assert.equal(embedded.answer, "embedded");
+
+  // Malformed or non-JSON input throws Error
+  assert.throws(() => parseJsonObject("not a json at all"), /No valid JSON object found/i);
 });
