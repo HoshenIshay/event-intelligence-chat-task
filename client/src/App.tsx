@@ -50,23 +50,9 @@ async function defaultSendMessage(messages: ChatTurn[]): Promise<ChatResponse> {
   });
 
   const responseBody = await response.text();
-  let payload: ChatResponse = {};
+  const trimmedBody = responseBody.trim();
 
-  if (responseBody.trim()) {
-    try {
-      payload = JSON.parse(responseBody) as ChatResponse;
-    } catch {
-      if (!response.ok) {
-        throw new Error(
-          `Request failed with HTTP ${response.status}; the server returned a non-JSON response.`,
-        );
-      }
-
-      throw new Error(`The server returned invalid JSON (HTTP ${response.status}).`);
-    }
-  }
-
-  if (!responseBody.trim()) {
+  if (!trimmedBody) {
     if (!response.ok) {
       throw new Error(
         `The server returned an empty error response (HTTP ${response.status}). Check that the chat API is running and try again.`,
@@ -75,34 +61,24 @@ async function defaultSendMessage(messages: ChatTurn[]): Promise<ChatResponse> {
     throw new Error(`The chat server returned an empty response (HTTP ${response.status}). Please try again.`);
   }
 
+  let payload: ChatResponse;
+  try {
+    payload = JSON.parse(trimmedBody) as ChatResponse;
+  } catch {
+    if (!response.ok) {
+      throw new Error(
+        `Request failed with HTTP ${response.status}; the server returned a non-JSON response.`,
+      );
+    }
+
+    throw new Error(`The server returned invalid JSON (HTTP ${response.status}).`);
+  }
+
   if (!response.ok) {
     throw new Error(payload.error ?? `The chat server couldn't complete your request (HTTP ${response.status}). Please try again.`);
   }
 
   return payload;
-}
-
-const insufficientEvidenceAnswer =
-  "I couldn't verify a reliable supporting source for this answer in the event dataset. Try rephrasing your question or asking about a specific event.";
-const offTopicRefusal = "I am not authorized to answer questions beyond my defined topics.";
-
-function isUsableReference(reference: unknown): reference is Reference {
-  if (reference === null || typeof reference !== "object") {
-    return false;
-  }
-
-  const fields: Array<keyof Reference> = [
-    "eventId",
-    "eventDate",
-    "title",
-    "summary",
-    "region",
-    "domain",
-    "sourceName",
-    "sourceUrl",
-  ];
-  const candidate = reference as Record<string, unknown>;
-  return fields.every((field) => typeof candidate[field] === "string" && candidate[field].trim().length > 0);
 }
 
 function App({ sendMessage = defaultSendMessage }: AppProps) {
@@ -149,19 +125,13 @@ function App({ sendMessage = defaultSendMessage }: AppProps) {
         return;
       }
 
-      const references = Array.isArray(response.references)
-        ? response.references.filter(isUsableReference)
-        : [];
+      const references = Array.isArray(response.references) ? response.references : [];
       const answer = typeof response.answer === "string" ? response.answer.trim() : "";
-      const lacksUsableEvidence = response.evidenceStatus === "supported" && references.length === 0;
-      const isOutOfScope = response.scopeStatus === "out_of_scope";
       const assistantMessage: ChatMessage = {
         id: `assistant-${Date.now()}`,
         role: "assistant",
-        content: isOutOfScope
-          ? offTopicRefusal
-          : answer && !lacksUsableEvidence ? answer : insufficientEvidenceAnswer,
-        references: isOutOfScope || lacksUsableEvidence || !answer ? [] : references,
+        content: answer || "The chat server returned an empty answer. Please try again.",
+        references,
       };
 
       setMessages((current) => [...current, assistantMessage]);

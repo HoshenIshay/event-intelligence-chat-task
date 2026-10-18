@@ -20,7 +20,7 @@ This tracker records the outstanding items from the original Event Intelligence 
 
 ## 3. Document the exact model choice
 
-- [ ] Update `README.md` to name the configured model, `gemini-2.5-flash`.
+- [ ] Update `README.md` to name the configured model, `gemini-3.8-flash`.
 - [ ] Briefly document the key prompt decisions: supplied events as the source of factual claims, company profile as relevance context, and explicit insufficient-evidence responses.
 
 **Current status:** Incomplete. The README discusses Gemini and grounding but does not identify the model by name.

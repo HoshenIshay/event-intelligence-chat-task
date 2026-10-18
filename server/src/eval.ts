@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { generateGeminiResponse, type ChatMessage, type ChatResponseBody } from "./index.js";
 
@@ -95,7 +97,7 @@ export async function runLiveEvaluation(
   return { skipped: false, passed, failed, results };
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   const result = await runLiveEvaluation();
   if (result.skipped) {
     console.log("Live Gemini evaluation skipped: GEMINI_API_KEY is not configured.");

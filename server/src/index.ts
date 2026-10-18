@@ -152,6 +152,9 @@ Use the supplied event dataset as the only source of factual event claims.
 Treat the company profile as relevance context only; do not treat it as evidence.
 Distinguish event facts from Asteron-specific analysis and never claim facts that are not in the event dataset.
 If the evidence is insufficient, say so explicitly and set evidenceStatus to "insufficient".
+When a user asks which of previously mentioned events is more relevant or earlier-impacting, compare the cited events directly using their dates, titles, summaries, and described effects; do not require company-specific operating data to rank relative urgency within the supplied event set.
+When a question is not directly answerable from the dataset but is still about the dataset's implications for Asteron Systems, keep scopeStatus as "in_scope" and answer with an explicit insufficient-evidence explanation rather than refusing.
+When the dataset does not support a forecast or macro-economic prediction, classify as in_scope with evidenceStatus "insufficient" and a non-empty answer explaining the lack of evidence; do not answer with the off-topic refusal unless the request is truly outside the event dataset and its implications for Asteron Systems.
 
 Company profile:
 - Name: ${companyName}
@@ -201,9 +204,6 @@ export function validateGroundedResponse(value: unknown): GroundedResponse {
 
   const candidate = value as Record<string, unknown>;
   const scopeStatus = candidate.scopeStatus;
-  if (scopeStatus === "out_of_scope") {
-    return outOfScopeGroundedResponse();
-  }
   if (scopeStatus !== "in_scope") {
     return outOfScopeGroundedResponse();
   }
@@ -301,9 +301,7 @@ export function validateChatRequest(body: unknown): ChatMessage[] {
     return { role, content };
   });
 
-  const latestUserMessage = [...validatedMessages]
-    .reverse()
-    .find((message) => message.role === "user");
+  const latestUserMessage = getLatestUserMessage(validatedMessages);
 
   if (!latestUserMessage || latestUserMessage.content.trim().length === 0) {
     throw new Error("Latest user message cannot be empty.");
@@ -312,11 +310,17 @@ export function validateChatRequest(body: unknown): ChatMessage[] {
   return validatedMessages;
 }
 
-export function generateFakeModelResponse(messages: ChatMessage[]): ChatResponseBody {
-  const latestUserMessage = [...messages]
-    .reverse()
-    .find((message) => message.role === "user");
+export function getLatestUserMessage(messages: ChatMessage[]): ChatMessage | undefined {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === "user") {
+      return messages[i];
+    }
+  }
+  return undefined;
+}
 
+export function generateFakeModelResponse(messages: ChatMessage[]): ChatResponseBody {
+  const latestUserMessage = getLatestUserMessage(messages);
   const content = latestUserMessage?.content?.trim() ?? "";
   const answer = `Mock model response: ${content}`;
 

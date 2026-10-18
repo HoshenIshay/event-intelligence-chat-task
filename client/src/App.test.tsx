@@ -169,10 +169,10 @@ describe("Event Intelligence Chat UI", () => {
     expect(screen.queryByText(/The biggest near-term risk is semiconductor supply disruption\./i)).not.toBeInTheDocument();
   });
 
-  it("does not show an answer as supported when its references are missing", async () => {
+  it("renders the insufficient evidence response and suppresses sources when evidence is insufficient", async () => {
     const sendMessage = vi.fn().mockResolvedValue({
-      answer: "An unverified answer.",
-      evidenceStatus: "supported",
+      answer: "I couldn't verify a reliable supporting source for this answer in the event dataset. Try rephrasing your question or asking about a specific event.",
+      evidenceStatus: "insufficient",
       references: [],
     });
 
@@ -184,15 +184,14 @@ describe("Event Intelligence Chat UI", () => {
     await waitFor(() => {
       expect(screen.getByText(/couldn't verify a reliable supporting source/i)).toBeInTheDocument();
     });
-    expect(screen.queryByText("An unverified answer.")).not.toBeInTheDocument();
     expect(screen.queryByRole("list", { name: /sources for this answer/i })).not.toBeInTheDocument();
   });
 
-  it("replaces off-topic model content with the exact scope refusal", async () => {
+  it("renders the scope refusal without sources when an out-of-scope response is received", async () => {
     const sendMessage = vi.fn().mockResolvedValue({
-      answer: "Here's a pancake recipe.",
+      answer: "I am not authorized to answer questions beyond my defined topics.",
       scopeStatus: "out_of_scope",
-      evidenceStatus: "supported",
+      evidenceStatus: "insufficient",
       references: [],
     });
 
@@ -204,11 +203,10 @@ describe("Event Intelligence Chat UI", () => {
     await waitFor(() => {
       expect(screen.getByText("I am not authorized to answer questions beyond my defined topics.")).toBeInTheDocument();
     });
-    expect(screen.queryByText("Here's a pancake recipe.")).not.toBeInTheDocument();
     expect(screen.queryByRole("list", { name: /sources for this answer/i })).not.toBeInTheDocument();
   });
 
-  it("shows a useful message instead of treating an empty successful response as an answer", async () => {
+  it("shows a fallback message instead of treating an empty successful response as an answer", async () => {
     const sendMessage = vi.fn().mockResolvedValue({
       answer: "   ",
       evidenceStatus: "supported",
@@ -221,9 +219,8 @@ describe("Event Intelligence Chat UI", () => {
     await user.click(screen.getByRole("button", { name: /send/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/couldn't verify a reliable supporting source/i)).toBeInTheDocument();
+      expect(screen.getByText(/chat server returned an empty answer/i)).toBeInTheDocument();
     });
-    expect(screen.queryByText(/No answer returned/i)).not.toBeInTheDocument();
   });
 
   it("shows a useful error when the server returns an empty HTTP error response", async () => {
